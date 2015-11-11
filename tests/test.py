@@ -100,6 +100,19 @@ class TestGateway(unittest.TestCase):
         self.gateway.logic('1;1;1;0;1;75\n')
         self.assertEqual(sensor.children[1].values[SetReq.V_HUM], '75')
 
+    def test_make_req_light_level(self):
+        """Test make a request for a sensor child value from sensor."""
+        sensor = self._add_sensor(1)
+        sensor.children[0] = my.ChildSensor(0, Presentation.S_LIGHT_LEVEL)
+        self.gateway.logic('1;0;1;0;23;43\n')
+        self.gateway.request_child_value(1, 0, 23)
+        ret = self.gateway.handle_queue()
+        self.assertEqual(ret.encode(), '1;0;2;0;23;\n')
+        self.gateway.request_child_value(2, 3, 23)
+        self.assertIsNone(self.gateway.handle_queue())
+        self.gateway.request_child_value(1, 0, 20)
+        self.assertIsNone(self.gateway.handle_queue())
+
     def test_battery_level(self):
         """Test internal receive of battery level."""
         sensor = self._add_sensor(1)

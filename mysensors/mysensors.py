@@ -245,6 +245,20 @@ class Gateway(object):
             self.fill_queue(self.sensors[sensor_id].set_child_value,
                             (child_id, value_type, value))
 
+    def request_child_value(self, sensor_id, child_id, value_type):
+        """
+        Add a command to request a sensor value, to the queue.
+
+        A queued command will be sent to the sensor, when the gateway
+        thread has sent all previously queued commands to the FIFO queue.
+        """
+        if self.is_sensor(sensor_id, child_id):
+            self.fill_queue(self.sensors[sensor_id].request_child_value,
+                            (child_id, value_type))
+        else:
+            LOGGER.warning(
+                'Node: %s with child: %s does not exist', sensor_id, child_id)
+
 
 class SerialGateway(Gateway, threading.Thread):
     """Serial gateway for MySensors."""
@@ -373,6 +387,16 @@ class Sensor:
             msg = Message()
             return msg.copy(node_id=self.sensor_id, child_id=child_id, type=1,
                             sub_type=value_type, payload=value)
+        return None
+
+    def request_child_value(self, child_id, value_type, **kwargs):
+        """Request a child sensor's value."""
+        if child_id in self.children and \
+                value_type in self.children[child_id].values:
+            msg = Message()
+            msg_type = kwargs.get('msg_type', 2)
+            return msg.copy(node_id=self.sensor_id, child_id=child_id,
+                            type=msg_type, sub_type=value_type)
         return None
 
         # TODO: Handle error
