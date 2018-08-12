@@ -36,7 +36,8 @@ class Gateway:
 
     def __init__(self, event_callback=None, persistence=False,
                  persistence_file='mysensors.pickle',
-                 persistence_scheduler=None, protocol_version='1.4'):
+                 persistence_scheduler=None, protocol_version='1.4',
+                 inclusion_mode=False):
         """Set up Gateway."""
         super().__init__()
         self.queue = deque()
@@ -55,6 +56,8 @@ class Gateway:
         self.handlers = dict(handlers)
         self.ota = OTAFirmware(self.sensors, self.const)
         self.can_log = False
+        self.inclusion_mode = inclusion_mode
+        self.inclusion_ok = False
 
     def __repr__(self):
         """Return the representation."""

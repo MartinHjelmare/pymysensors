@@ -31,6 +31,8 @@ def handle_smartsleep(msg):
 @HANDLERS.register('presentation')
 def handle_presentation(msg):
     """Process a presentation message."""
+    if msg.gateway.inclusion_mode and not msg.gateway.inclusion_ok:
+        return None
     if msg.child_id == SYSTEM_CHILD_ID:
         # this is a presentation of the sensor platform
         sensorid = msg.gateway.add_sensor(msg.node_id)
@@ -134,6 +136,14 @@ def handle_id_request(msg):
     return msg.modify(
         ack=0, sub_type=msg.gateway.const.Internal['I_ID_RESPONSE'],
         payload=node_id) if node_id is not None else None
+
+
+@HANDLERS.register('I_INCLUSION_MODE')
+def handle_inclusion_mode(msg):  # pylint: disable=useless-return
+    """Process an inclusion mode message."""
+    mode = bool(int(msg.payload))
+    msg.gateway.inclusion_ok = mode
+    return None
 
 
 @HANDLERS.register('I_CONFIG')
