@@ -157,6 +157,32 @@ def test_id_request_presentation(gateway):
     assert gateway.sensors[1].protocol_version == '1.5.0'
 
 
+def test_inclusion_mode():
+    """Test inclusion mode and presentation."""
+    gateway = get_gateway(inclusion_mode=True)
+    assert not gateway.inclusion_ok
+    ret = gateway.logic('0;255;3;0;5;1\n')
+    assert ret is None
+    assert gateway.inclusion_ok
+    gateway.logic('1;255;0;0;17;1.5.0\n')
+    assert 1 in gateway.sensors
+    gateway.logic('0;255;3;0;5;0\n')
+    assert not gateway.inclusion_ok
+    gateway.logic('2;255;0;0;17;1.5.0\n')
+    assert 2 not in gateway.sensors
+    # Id request will circumvent inclusion mode and add node.
+    # Children will still not be created though if inclusion is off.
+    ret = gateway.logic('255;255;3;0;3;\n')
+    assert ret == '255;255;3;0;4;2\n'
+    assert 2 in gateway.sensors
+    gateway.logic('2;0;0;0;16;\n')
+    assert 0 not in gateway.sensors[2].children
+    gateway.logic('0;255;3;0;5;1\n')
+    assert gateway.inclusion_ok
+    gateway.logic('2;0;0;0;16;\n')
+    assert 0 in gateway.sensors[2].children
+
+
 def test_internal_config(gateway):
     """Test internal config request, metric or imperial."""
     # metric
