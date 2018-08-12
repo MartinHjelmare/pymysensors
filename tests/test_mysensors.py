@@ -172,6 +172,8 @@ def test_inclusion_mode():
     assert 2 not in gateway.sensors
     # Id request will circumvent inclusion mode and add node.
     # Children will still not be created though if inclusion is off.
+    # FIXME: This is a problem if children are added later
+    # without presenting node again like below.
     ret = gateway.logic('255;255;3;0;3;\n')
     assert ret == '255;255;3;0;4;2\n'
     assert 2 in gateway.sensors
