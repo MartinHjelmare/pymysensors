@@ -351,7 +351,7 @@ class BaseAsyncGateway(BaseTransportGateway):
         """Stop the gateway."""
         _LOGGER.info('Stopping gateway')
         self._disconnect()
-        if self.connect_task and not self.connect_task.cancelled():
+        if self.connect_task and not self.connect_task.done():
             self.connect_task.cancel()
             self.connect_task = None
         if not self.persistence:
